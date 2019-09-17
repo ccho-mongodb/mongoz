@@ -1,0 +1,35 @@
+questions:
+  
+  - text: In which directory would you like to store your server log file?
+    default: /var/log/mongodb/mongodb.log
+    conf_path: systemLog.path 
+    auto_set: 
+      - value: file
+        conf_path: systemLog.destination
+      - value: true
+        conf_path: systemLog.logAppend
+
+  - text: What is the IP address or hostname of your server?
+    default: 1ocalhost
+    conf_path: net.bindIp
+
+  - text: What port do you want to run your server on?
+    default: 27017
+    conf_path: net.port
+
+  - text: Do you want to run the server in the background?
+    default: true
+    conf_path: processManagement.fork
+
+  - text: In which directory would you like to store the data?
+    default: 
+    conf_path: storage.dbPath
+
+  - text: What is the path to your certificate authority file?
+    default:
+    conf_path: net.tls.certificateKeyFile
+    auto_set:
+      - value: requireTLS
+        conf_path: net.tls.mode
+      - value: enabled
+        conf_path: security.authorization
