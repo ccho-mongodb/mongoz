@@ -11,6 +11,7 @@ SERVER_CERT="myserver.pem"
 KEY_FILE="mykey.key"
 CLIENT_KEY="myclient.key"
 SERVER_KEY="myserver.key"
+INT_KEY_FILE="intkey.key"
 
 CERT_DIR = Path("cert_dir/")
 
@@ -49,9 +50,45 @@ def create_self_signed_cert(cert_dir):
       ])
     cert.sign(k, 'sha256')
 
+    # create a key pair
+    intermediateKey = crypto.PKey()
+    intermediateKey.generate_key(crypto.TYPE_RSA, 4096)
+
+    # create a self-signed cert
+    intermediate_cert = crypto.X509()
+    intermediate_cert.get_subject().C = "US"
+    intermediate_cert.get_subject().ST = "New York"
+    intermediate_cert.get_subject().L = "New York"
+    intermediate_cert.get_subject().O = "MongoDB"
+    intermediate_cert.get_subject().OU = "SoftwareEng"
+    intermediate_cert.get_subject().CN = gethostname()
+    intermediate_cert.gmtime_adj_notBefore(0)
+    intermediate_cert.gmtime_adj_notAfter(365*24*60*60)
+    intermediate_cert.set_serial_number(random.randint(50000000,100000000))
+    intermediate_cert.set_issuer(cert.get_subject())
+    intermediate_cert.set_pubkey(intermediateKey)
+    intermediate_cert.add_extensions([
+      crypto.X509Extension(b"subjectKeyIdentifier", False, b"hash",
+                                    subject=intermediate_cert),
+      crypto.X509Extension(b"basicConstraints", False, b"CA:TRUE"),
+      crypto.X509Extension(b"keyUsage", True,
+                                   b"keyCertSign, cRLSign"),
+      crypto.X509Extension(b"nsComment", False, b"OpenSSL Generated Certificate for TESTING only.  NOT FOR PRODUCTION USE."),
+      crypto.X509Extension(b"extendedKeyUsage", False, b"serverAuth, clientAuth"),
+      #crypto.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always",issuer=intermediate_cert)
+      ])
+    intermediate_cert.sign(intermediateKey, 'sha256')
+
+
     with open(join(cert_dir, CERT_FILE), "wb") as f:
         f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, intermediate_cert))
+
+    with open(join(cert_dir, KEY_FILE), "wb") as f:
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+
+    with open(join(cert_dir, INT_KEY_FILE), "wb") as f:
+        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, intermediateKey))
 
     client_key = crypto.PKey()
     client_key.generate_key(crypto.TYPE_RSA, 4096)
