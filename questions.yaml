@@ -16,10 +16,12 @@ questions:
   - text: What port do you want to run your server on?
     default: 27017
     conf_path: net.port
+    validate: port_number
 
   - text: Do you want to run the server in the background?
     default: true
     conf_path: processManagement.fork
+    validate: boolean
 
   - text: In which directory would you like to store the data?
     default: 
