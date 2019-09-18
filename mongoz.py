@@ -1,5 +1,7 @@
 import yaml
 import re
+from generate_certificate import create_self_signed_cert
+from pathlib import Path
 
 def load_questions(fn):
     with open(fn) as f:
@@ -68,7 +70,10 @@ def validate_and_format_port_number(token):
     return new_token
 
 if __name__ == "__main__":
-    # init
+    # create certificate file
+    create_self_signed_cert(Path("cert_dir/"))
+
+    # initialize questions
     data = load_questions('questions.yaml')
 
     # run
