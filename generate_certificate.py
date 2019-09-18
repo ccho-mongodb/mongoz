@@ -40,19 +40,18 @@ def create_self_signed_cert(cert_dir):
     cert.add_extensions([
       crypto.X509Extension(b"subjectKeyIdentifier", False, b"hash",
                                     subject=cert),
-      crypto.X509Extension(b"basicConstraints", False, b"CA:TRUE"),
+      crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE"),
       crypto.X509Extension(b"keyUsage", True,
                                    b"keyCertSign, cRLSign"),
       crypto.X509Extension(b"nsComment", False, b"OpenSSL Generated Certificate for TESTING only.  NOT FOR PRODUCTION USE."),
       crypto.X509Extension(b"extendedKeyUsage", False, b"serverAuth, clientAuth"),
+      #crypto.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always",issuer=cert)
       ])
-      #crypto.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always",issuer=cert),
     cert.sign(k, 'sha256')
 
-    open(join(cert_dir, CERT_FILE), "wb").write(
-        crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
-    open(join(cert_dir, KEY_FILE), "wb").write(
-        crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+    with open(join(cert_dir, CERT_FILE), "wb") as f:
+        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
 
     client_key = crypto.PKey()
     client_key.generate_key(crypto.TYPE_RSA, 4096)
@@ -117,9 +116,8 @@ def create_self_signed_cert(cert_dir):
     server_cert.gmtime_adj_notAfter(10*365*24*60*60)
     server_cert.sign(k, 'sha256')
 
-    open(join(cert_dir, SERVER_CERT), "wb").write(
-        crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-    open(join(cert_dir, SERVER_KEY), "wb").write(
-        crypto.dump_privatekey(crypto.FILETYPE_PEM, server_key))
+    with open(join(cert_dir, SERVER_CERT), "wb") as f:
+       f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
+       f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, server_key))
 
 create_self_signed_cert(CERT_DIR)
