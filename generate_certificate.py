@@ -3,6 +3,7 @@ from os.path import exists, join
 from socket import gethostname
 from pathlib import Path
 import random
+from os import mkdir
 
 
 CERT_FILE="mycert.pem"
@@ -20,7 +21,12 @@ def create_self_signed_cert(cert_dir):
     """
     Create certificate and key for CA, server, and client.
     """
-
+    try:
+        mkdir(cert_dir)
+    except OSError:
+        print ("Creation of the directory %s failed" % cert_dir)
+    else:
+        print ("Successfully created the directory %s " % cert_dir)
     # create a key pair
     k = crypto.PKey()
     k.generate_key(crypto.TYPE_RSA, 4096)
@@ -97,7 +103,7 @@ def create_self_signed_cert(cert_dir):
     client_cert.set_serial_number(random.randint(50000000,100000000))
 
     client_subj = client_cert.get_subject()
-    client_subj.commonName = "Client"
+    client_subj.commonName = "localhost"
 
     client_cert.add_extensions([
         crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
@@ -108,6 +114,7 @@ def create_self_signed_cert(cert_dir):
         crypto.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always", issuer=cert),
         crypto.X509Extension(b"extendedKeyUsage", False, b"clientAuth"),
         crypto.X509Extension(b"keyUsage", False, b"digitalSignature"),
+        crypto.X509Extension(b"subjectAltName", False, b"DNS:localhost"),
     ])
 
     client_cert.set_issuer(cert.get_subject())
@@ -116,10 +123,9 @@ def create_self_signed_cert(cert_dir):
     client_cert.gmtime_adj_notAfter(10*365*24*60*60)
     client_cert.sign(k, 'sha256')
 
-    open(join(cert_dir, CLIENT_CERT), "wb").write(
-        crypto.dump_certificate(crypto.FILETYPE_PEM, client_cert))
-    open(join(cert_dir, CLIENT_KEY), "wb").write(
-        crypto.dump_privatekey(crypto.FILETYPE_PEM, client_key))
+    with open(join(cert_dir, CLIENT_CERT), "wb") as f:
+        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, client_cert))
+        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, client_key))
 
     server_key = crypto.PKey()
     server_key.generate_key(crypto.TYPE_RSA, 4096)
@@ -128,7 +134,7 @@ def create_self_signed_cert(cert_dir):
     server_cert.set_serial_number(random.randint(50000000,100000000))
 
     server_subj = server_cert.get_subject()
-    server_subj.commonName = "Server"
+    server_subj.commonName = "localhost"
     server_subj.C = "US"
     server_subj.ST = "New York"
     server_subj.L = "New York"

@@ -4,6 +4,7 @@ from generate_certificate import create_self_signed_cert
 from pathlib import Path
 import os
 import colorama
+import subprocess
 
 def load_yaml(fn):
     with open(fn) as f:
@@ -118,3 +119,7 @@ if __name__ == "__main__":
     print ('Creating security certificates...', end='')
     create_self_signed_cert(Path("cert_dir/"))
     print('Created!')
+
+    # start mongod with newly-created config file
+    print ('Starting mongod...')
+    subprocess.call(['mongod', '--config', 'mongod.conf'])
