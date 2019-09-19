@@ -2,6 +2,7 @@ import yaml
 from re import match
 from generate_certificate import create_self_signed_cert
 from pathlib import Path
+import os
 
 def load_yaml(fn):
     with open(fn) as f:
@@ -18,12 +19,11 @@ def get_nested_val(path, config):
 
     return curr_key
 
-
-def add_nested(path, val, dictionary):
+def add_nested_val(path, val, dictionary):
     parts = path.split('.', 1)
     if len(parts) > 1:
         branch = dictionary.setdefault(parts[0], {})
-        add_nested(parts[1], val, branch)
+        add_nested_val(parts[1], val, branch)
     else:
         dictionary[parts[0]] = val
 
@@ -33,7 +33,10 @@ def show_prompt(questions, existing_config):
         loopPrompt = True
         while loopPrompt:
             try:
+                os.system('clear')
                 def_val = get_nested_val(q['conf_path'], existing_config) if existing_config else q['default']
+                print("mongOz\n\n")
+                print("Setting: {}\n\n{}\n\n".format(q['conf_path'], q['hint']))
 
                 print("{} [{}]".format(q['text'], def_val))
                 answer = input() or def_val
@@ -50,11 +53,11 @@ def show_prompt(questions, existing_config):
                 print("{}\n".format(e))
                 pass
 
-        add_nested(q['conf_path'], result, responses)
+        add_nested_val(q['conf_path'], result, responses)
        
         if 'auto_set' in q:
             for setting in q['auto_set']:
-                add_nested(setting['conf_path'], setting['value'], responses)
+                add_nested_val(setting['conf_path'], setting['value'], responses)
 
     return responses
 

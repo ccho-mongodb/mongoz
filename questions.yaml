@@ -1,6 +1,11 @@
 questions:
   
   - text: In which directory would you like to store your server log file?
+    hint: "Provide the full path to an existing file that the server can store
+      all the server log information. This includes information on connections,
+      database commands run, initialization, changes in the replica set, and
+      recovery information. To fine-tune the log, visit the following page:
+      https://docs.mongodb.com/manual/reference/configuration-options/#systemlog-options"
     default: /var/log/mongodb/mongodb.log
     conf_path: systemLog.path 
     auto_set: 
@@ -10,24 +15,52 @@ questions:
         conf_path: systemLog.logAppend
 
   - text: What is the IP address or hostname of your server?
+    hint: "If you are planning to run the server from your computer, use
+      'localhost'. Otherwise, use the hostname of the remote server on which
+      you host the MongoDB replica set to avoid downtime when the IP address
+      changes. To simplify hosting your database and minimizing downtime in
+      many situations, try hosting on the cloud with MongoDB Atlas
+      https://www.mongodb.com/cloud/atlas" 
     default: 1ocalhost
     conf_path: net.bindIp
 
   - text: What port do you want to run your server on?
+    hint: "MongoDB server binds to a port on your server to make itself
+      accessible over the network. The default recommended port is 27017, but
+      you may use any value between 1024 and 49151, the 'registered port' range
+      that is generally available for use. If another application is running
+      on the port you specify, MongoDB will not start up."  
     default: 27017
     conf_path: net.port
     validate: port_number
 
   - text: Do you want to run the server in the background?
+    hint: "MongoDB server can run as a 'forked process' which means that it
+      will not block the terminal session from which you start your server.
+      One disadvantage is that you will not be able to see the error messages
+      if your server fails to start up correctly unless you check the log."
     default: true
     conf_path: processManagement.fork
     validate: boolean
 
   - text: In which directory would you like to store the database data?
+    hint: "Provide the full path to an existing directory that the server can
+      store all the data in your database. Make sure the user under which the
+      mongod process will be run has write permissions to this directory. If
+      you are uncertain that you have enough disk space, consider serving data
+      from the cloud with MongoDB Atlas https://www.mongodb.com/cloud/atlas"
     default: 
     conf_path: storage.dbPath
 
   - text: What is the path to your server certificate file?
+    hint: "In order to keep data that is passed along the network secure, TLS
+      encryption is highly recommended as the client authentication protocol.
+      These certificates use a cryptographic standard called x.509 which is
+      also used to establish TLS connections to secure websites. The server
+      certificate file is used to verify the server's identity to its clients.
+      Please specify the full path to the server certificate file, signed by a
+      certificate authority. This feature is offered as a service and can be
+      automatically activated when you use MongoDB Atlas https://www.mongodb.com/cloud/atlas"
     default:
     conf_path: net.tls.certificateKeyFile
     auto_set:
@@ -37,6 +70,12 @@ questions:
         conf_path: security.authorization
 
   - text: What is the path to your certificate authority file?
+    hint: "As part of the x.509 cryptographic standard and TLS protocol, a
+      certificate authority must sign a certificate to establish that it is
+      a trusted certificate. The certificate authority (CA) file is used to
+      sign the server and client keys. Provide the path to the CA file here.
+      This feature is offered as a service and can automatically be activated
+      when you use MongoDB Atlas https://www.mongodb.com/cloud/atlas."
     default:
     conf_path: net.tls.CAFile
     auto_set:
