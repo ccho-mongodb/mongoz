@@ -1,38 +1,51 @@
 import yaml
-import re
+from re import match
 from generate_certificate import create_self_signed_cert
 from pathlib import Path
 
-def load_questions(fn):
+def load_yaml(fn):
     with open(fn) as f:
-        # use safe_load instead loabd
         return yaml.safe_load(f)
 
-def add_nested(string, val, dictionary):
-    parts = string.split('.', 1)
+def get_nested_val(path, config):
+    parts = path.split('.')
+
+    curr_key = config[parts[0]]
+    parts = parts[1:]
+    while len(parts) > 0:
+        curr_key = curr_key[parts[0]]
+        parts = parts[1:]
+
+    return curr_key
+
+
+def add_nested(path, val, dictionary):
+    parts = path.split('.', 1)
     if len(parts) > 1:
         branch = dictionary.setdefault(parts[0], {})
         add_nested(parts[1], val, branch)
     else:
         dictionary[parts[0]] = val
 
-def show_prompt(questions):
+def show_prompt(questions, existing_config):
     responses = {}
     for q in questions:
-        result = None
-        while result is None:
+        loopPrompt = True
+        while loopPrompt:
             try:
-                print("{} [{}]".format(q['text'], q['default']))
-                answer = input() or q['default']
+                def_val = get_nested_val(q['conf_path'], existing_config) if existing_config else q['default']
+
+                print("{} [{}]".format(q['text'], def_val))
+                answer = input() or def_val
                 
                 if 'validate' in q:
-                    print("validate value: {}".format(q['validate']))
                     if q['validate'] == 'boolean':
                         answer = validate_and_format_boolean(answer)
                     elif q['validate'] == 'port_number':
                         answer = validate_and_format_port_number(answer)
 
                 result = answer
+                loopPrompt = False
             except Exception as e:
                 print("{}\n".format(e))
                 pass
@@ -47,7 +60,7 @@ def show_prompt(questions):
 
 def validate_and_format_boolean(token):
     new_token = str(token).lower().replace(" ", "")
-    matches = re.match(r"^(true|false|t|f|y|n|yes|no)$", new_token)
+    matches = match(r"^(true|false|t|f|y|n|yes|no)$", new_token)
     if not matches:
         raise Exception("Invalid input: {}".format(token))
 
@@ -73,12 +86,19 @@ if __name__ == "__main__":
     # create certificate file
     create_self_signed_cert(Path("cert_dir/"))
 
-    # initialize questions
-    data = load_questions('questions.yaml')
+    existing_config = None
+    # init
+    if Path('mongod.conf').exists():
+        print('Updating your existing mongo.conf file.')
+        existing_config = load_yaml('mongod.conf')
 
-    # run
-    responses = show_prompt(data['questions'])
+    question_data = load_yaml('questions.yaml')
+
+    # run wizard
+    responses = show_prompt(question_data['questions'], existing_config)
 
     # write and exit
     with open('mongod.conf', 'w') as outfile:
         yaml.dump(responses, outfile)
+
+    print('Configuration file written to mongod.conf')

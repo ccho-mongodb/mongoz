@@ -23,7 +23,7 @@ questions:
     conf_path: processManagement.fork
     validate: boolean
 
-  - text: In which directory would you like to store the data?
+  - text: In which directory would you like to store the database data?
     default: 
     conf_path: storage.dbPath
 
