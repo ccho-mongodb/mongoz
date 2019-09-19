@@ -21,7 +21,7 @@ questions:
       changes. To simplify hosting your database and minimizing downtime in
       many situations, try hosting on the cloud with MongoDB Atlas
       https://www.mongodb.com/cloud/atlas" 
-    default: 1ocalhost
+    default: localhost
     conf_path: net.bindIp
 
   - text: What port do you want to run your server on?
