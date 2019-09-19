@@ -144,7 +144,7 @@ def create_self_signed_cert(cert_dir):
         crypto.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always", issuer=cert),
         crypto.X509Extension(b"extendedKeyUsage", False, b"serverAuth"),
         crypto.X509Extension(b"keyUsage", False, b"digitalSignature"),
-        crypto.X509Extension(b"subjectAltName", False, b"DNS:mariamac"),
+        crypto.X509Extension(b"subjectAltName", False, b"DNS:localhost"),
     ])
 
     server_cert.set_issuer(cert.get_subject())

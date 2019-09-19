@@ -61,7 +61,7 @@ questions:
       Please specify the full path to the server certificate file, signed by a
       certificate authority. This feature is offered as a service and can be
       automatically activated when you use MongoDB Atlas https://www.mongodb.com/cloud/atlas"
-    default:
+    default: cert_dir/myserver.pem
     conf_path: net.tls.certificateKeyFile
     auto_set:
       - value: requireTLS
@@ -76,7 +76,7 @@ questions:
       sign the server and client keys. Provide the path to the CA file here.
       This feature is offered as a service and can automatically be activated
       when you use MongoDB Atlas https://www.mongodb.com/cloud/atlas."
-    default:
+    default: cert_dir/mycert.pem
     conf_path: net.tls.CAFile
     auto_set:
       - value: requireTLS
